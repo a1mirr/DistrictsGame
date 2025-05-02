@@ -14,9 +14,11 @@
       padding: 20px;
     }
 
-    #prompt {
-      white-space: pre-wrap;
-    }
+  #prompt {
+    flex-basis: 100%;
+    white-space: normal;
+    word-break: break-word;
+  }
   #controls {
     background: #f7f7f7;
     padding: 5px;
@@ -36,12 +38,6 @@
     padding: 2px;
     max-width: 100%;
     box-sizing: border-box;
-  }
-  #prompt {
-    flex-basis: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   #map { width: 100%; height: calc(100% - 150px); }
   .incorrect { fill: rgba(255,0,0,0.5); }
