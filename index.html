@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Country & Region Guessing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  body, html { margin:0; padding:0; height:100%; }
+  #controls {
+    background: #f7f7f7;
+    padding: 12px;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 1.2em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  #controls select, #controls button {
+    font-size: 1em;
+    padding: 8px 12px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  #prompt {
+    flex-basis: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #map { width: 100%; height: calc(100% - 150px); }
+  .incorrect { fill: rgba(255,0,0,0.5); }
+  .correct { fill: rgba(0,255,0,0.5); }
+
+  @media (max-width: 600px) {
+    #controls { flex-direction: column; height: auto; }
+    #map { height: calc(100% - 250px); }
+  }
+</style>
+</head>
+<body>
+
+  <div id="controls">
+    <label for="country">Country:</label>
+    <select id="country">
+      <option value="hungary">🇭🇺 Hungary</option>
+      <option value="germany">🇩🇪 Germany</option>
+      <!-- Add more countries -->
+    </select>
+
+    <label for="subdivision">Subdivision:</label>
+    <select id="subdivision"></select>
+
+    <button id="next">Next area</button>
+    <span id="prompt">Loading…</span>
+  </div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const withLabels = L.tileLayer(
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { maxZoom:18, attribution:'© OSM' }
+    );
+    const noLabels = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+      { maxZoom:18, attribution:'© CartoDB' }
+    );
+
+    const map = L.map('map', {
+      center: [47.5,19.0],
+      zoom: 11,
+      layers: [ withLabels ]
+    });
+
+    L.control.layers({
+      'With Labels': withLabels,
+      'Blank Map':  noLabels
+    }).addTo(map);
+
+    const countrySelect = document.getElementById('country');
+    const subdivisionSelect = document.getElementById('subdivision');
+    const btnNext    = document.getElementById('next');
+    const promptEl   = document.getElementById('prompt');
+
+    let geojsonLayer=null, currentData=null,
+        nameProp='name', targetName='', attempts=3,
+        correctClicked=false;
+
+    function style(f){ return {color:'#555',weight:1,fill:'white',fillOpacity:0.5}; }
+    function highlight(layer, cls){
+      layer.setStyle({fillOpacity:0.7});
+      const el=layer.getElement(); if(el) el.classList.add(cls);
+    }
+    function onEachFeature(f,l){
+      l.on('click',()=>{ 
+        if(attempts===0 && correctClicked){
+          startNewRound();
+          return;
+        }
+        if(attempts===0) return;
+        const nm=f.properties[nameProp];
+        if(nm===targetName){
+          highlight(l,'correct');
+          promptEl.textContent='✅ Correct! Click again to continue.';
+          attempts=0;
+          correctClicked=true;
+        } else {
+          highlight(l,'incorrect');
+          attempts--;
+          promptEl.textContent=`❌ ${nm}. Attempts left: ${attempts}`;
+          if(attempts===0){
+            promptEl.textContent=`🏁 No attempts left. It was ${targetName}. Click anywhere to continue.`;
+            geojsonLayer.eachLayer(ll=>{
+              if(ll.feature.properties[nameProp]===targetName)
+                highlight(ll,'correct');
+            });
+            correctClicked=true;
+          }
+        }
+      });
+    }
+
+    function startNewRound(){
+      if(!currentData) return;
+      if(geojsonLayer) map.removeLayer(geojsonLayer);
+      geojsonLayer = L.geoJSON(currentData, {
+        style:style, onEachFeature:onEachFeature
+      }).addTo(map);
+
+      const names = currentData.features.map(f=>f.properties[nameProp]);
+      targetName = names[Math.floor(Math.random()*names.length)];
+      attempts = 3;
+      correctClicked=false;
+      promptEl.textContent = `🔎 Find: ${targetName} (Attempts: ${attempts})`;
+    }
+
+    const gameData = {
+      hungary: {
+        center: [47.2, 19.5],
+        zoom: 8,
+        subdivisions: {
+          regions: { file: 'Hungary_regions.json', nameProp: 'name' },
+          districts: { file: 'Budapest_districts.json', nameProp: 'name' }
+        }
+      },
+      germany: {
+        center: [51.0, 10.0],
+        zoom: 6,
+        subdivisions: {
+          states: { file: 'Germany_states.json', nameProp: 'NAME_1' },
+          districts: { file: 'Germany_districts.json', nameProp: 'NAME_2' }
+        }
+      }
+      // ➕ Add more countries here
+    };
+
+    function populateSubdivisionOptions() {
+      const country = countrySelect.value;
+      subdivisionSelect.innerHTML = '';
+      const subs = gameData[country].subdivisions;
+      for (const key in subs) {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = capitalizeFirstLetter(key);
+        subdivisionSelect.appendChild(opt);
+      }
+    }
+
+    function capitalizeFirstLetter(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+	function loadGame() {
+	  const country = countrySelect.value;
+	  const subdivision = subdivisionSelect.value;
+
+	  if (!gameData[country]) return;
+	  const subData = gameData[country].subdivisions[subdivision];
+	  if (!subData) return;
+
+	  promptEl.textContent = 'Loading…';
+
+	  fetch(subData.file)
+		.then(r => r.json())
+		.then(j => {
+		  currentData = j;
+		  nameProp = subData.nameProp;
+
+		  if (geojsonLayer) map.removeLayer(geojsonLayer);
+		  geojsonLayer = L.geoJSON(currentData, {
+			style: style
+		  }).addTo(map);
+
+		  // ✅ Auto-fit map to geojson bounds:
+		  map.fitBounds(geojsonLayer.getBounds());
+
+		  // Start round after map zooms
+		  startNewRound();
+		})
+		.catch(e => {
+		  console.error(e);
+		  promptEl.textContent = 'Failed to load data.';
+		});
+	}
+    countrySelect.addEventListener('change', () => {
+      populateSubdivisionOptions();
+      loadGame();
+    });
+    subdivisionSelect.addEventListener('change', loadGame);
+    btnNext.addEventListener('click', startNewRound);
+
+    populateSubdivisionOptions(); // initial populate
+    loadGame(); // initial load
+
+  </script>
+</body>
+</html>
