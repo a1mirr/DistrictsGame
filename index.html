@@ -141,23 +141,17 @@
     }
 
     const gameData = {
-      hungary: {
-        center: [47.2, 19.5],
-        zoom: 8,
+      Hungary: {
         subdivisions: {
-          regions: { file: 'Hungary_regions.json', nameProp: 'name' },
-          districts: { file: 'Budapest_districts.json', nameProp: 'name' }
+          Regions: { file: 'Hungary_regions.json', nameProp: 'name' },
+          "Budapest districts": { file: 'Hungary_Budapest_districts.json', nameProp: 'name' }
         }
       },
-      germany: {
-        center: [51.0, 10.0],
-        zoom: 6,
+      Poland: {
         subdivisions: {
-          states: { file: 'Germany_states.json', nameProp: 'NAME_1' },
-          districts: { file: 'Germany_districts.json', nameProp: 'NAME_2' }
+          voevodeships: { file: 'Poland_voivodeships.json', nameProp: 'name' },
         }
       }
-      // ➕ Add more countries here
     };
 
     function populateSubdivisionOptions() {
