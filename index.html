@@ -107,15 +107,15 @@
         const nm=f.properties[nameProp];
         if(nm===targetName){
           highlight(l,'correct');
-          promptEl.textContent='✅ Correct! Click again to continue.';
+          promptEl.textContent='✅ Correct! It is ${targetName}! Click again to continue.';
           attempts=0;
           correctClicked=true;
         } else {
           highlight(l,'incorrect');
           attempts--;
-          promptEl.textContent=`❌ ${nm}. Attempts left: ${attempts}`;
+          promptEl.textContent=`❌ Wrong! It is ${nm}. ${attempts} left to find ${targetName}`;
           if(attempts===0){
-            promptEl.textContent=`🏁 No attempts left. It was ${targetName}. Click anywhere to continue.`;
+            promptEl.textContent=`🏁 No attempts left. You looked for ${targetName}. Click anywhere to continue.`;
             geojsonLayer.eachLayer(ll=>{
               if(ll.feature.properties[nameProp]===targetName)
                 highlight(ll,'correct');
