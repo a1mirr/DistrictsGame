@@ -6,13 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow-x: hidden; /* Prevents horizontal scroll */
-  }
-
+  body, html { margin:0; padding:0; height:100%; }
   #controls {
     background: #f7f7f7;
     padding: 12px;
@@ -26,47 +20,26 @@
     gap: 8px;
     box-sizing: border-box;
     overflow: hidden;
-    max-width: 100%; /* Prevent the div from growing too wide */
-    width: 100%; /* Ensures it doesn't overflow horizontally */
-    box-sizing: border-box; /* Ensures padding and borders are included in the width */
   }
-
-  #controls select,
-  #controls button {
+  #controls select, #controls button {
     font-size: 1em;
     padding: 8px 12px;
     max-width: 100%;
     box-sizing: border-box;
   }
-
   #prompt {
     flex-basis: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  #map {
-    width: 100%;
-    height: calc(100% - 150px);
-  }
-
-  .incorrect {
-    fill: rgba(255, 0, 0, 0.5);
-  }
-
-  .correct {
-    fill: rgba(0, 255, 0, 0.5);
-  }
+  #map { width: 100%; height: calc(100% - 150px); }
+  .incorrect { fill: rgba(255,0,0,0.5); }
+  .correct { fill: rgba(0,255,0,0.5); }
 
   @media (max-width: 600px) {
-    #controls {
-      flex-direction: column;
-      height: auto;
-    }
-    #map {
-      height: calc(100% - 250px);
-    }
+    #controls { flex-direction: column; height: auto; }
+    #map { height: calc(100% - 250px); }
   }
 </style>
 </head>
@@ -84,6 +57,8 @@
     <select id="subdivision"></select>
 
     <button id="next">Next area</button>
+  </div>
+  <div id="controls">
     <span id="prompt">Loading…</span>
   </div>
   <div id="map"></div>
