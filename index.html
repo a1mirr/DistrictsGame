@@ -7,12 +7,23 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
   body, html { margin:0; padding:0; height:100%; }
+  .prompt-container {
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  height: 100vh;
+	  text-align: center;
+    }
+
+    #prompt {
+      white-space: pre-wrap;
+    }
   #controls {
     background: #f7f7f7;
-    padding: 12px;
+    padding: 5px;
     text-align: center;
     font-family: sans-serif;
-    font-size: 1.2em;
+    font-size: 1em;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -23,7 +34,7 @@
   }
   #controls select, #controls button {
     font-size: 1em;
-    padding: 8px 12px;
+    padding: 2px;
     max-width: 100%;
     box-sizing: border-box;
   }
@@ -58,7 +69,7 @@
 
     <button id="next">Next area</button>
   </div>
-  <div id="controls">
+  <div class="prompt-container">
     <span id="prompt">Loading…</span>
   </div>
   <div id="map"></div>
